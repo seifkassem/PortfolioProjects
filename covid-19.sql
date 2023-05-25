@@ -4,28 +4,29 @@ ORDER BY 1,2
 
 
 --Death percentage
-SELECT location, date, total_cases, total_deaths, (total_deaths / total_cases) * 100 AS death_percentage
+SELECT location, date, total_cases, new_deaths, total_deaths, (total_deaths / total_cases) * 100 AS death_percentage
 FROM Covid.dbo.CovidDeaths
-ORDER BY death_percentage DESC
+WHERE total_deaths IS NOT NULL AND total_cases IS NOT NULL
+ORDER BY new_deaths DESC
 
 
 --Highest death rates
-WITH deathr (Location, Population, Total_Cases, Maximum_Death_Rates) AS
+WITH deathr (Location, Population, Total_Cases, Highest_Deaths) AS
 (
-	SELECT location, population, MAX(total_cases) total_cases, MAX(total_deaths) maximum_death_rates
+	SELECT location, population, MAX(total_cases) total_cases, MAX(total_deaths) highest_deaths
 	FROM Covid.dbo.CovidDeaths
 	GROUP BY location, population
 	HAVING MAX(total_deaths) IS NOT NULL
 )
 
-SELECT *, ((Maximum_Death_Rates / Total_Cases) * 100) AS Percentage_of_Death_Per_Cases,
-	((Maximum_Death_Rates / Population)) * 100 AS Percentage_of_Death_Per_Population
+SELECT *, ((Highest_Deaths / Total_Cases) * 100) AS Percentage_of_Deaths_Per_Cases,
+	((Highest_Deaths / Population)) * 100 AS Percentage_of_Deaths_Per_Population
 FROM deathr
-ORDER BY Maximum_Death_Rates DESC
+ORDER BY Highest_Deaths DESC
 
 
 --Infected percentage
-SELECT location, population, MAX(total_cases) AS highest_infection_count, MAX((total_cases / population)) * 100 AS infected_percentage
+SELECT location, population, MAX(total_cases) AS highest_infection_count, (MAX(total_cases) / population) * 100 AS infected_percentage
 FROM Covid.dbo.CovidDeaths
 GROUP BY location, population
 ORDER BY infected_percentage DESC
@@ -52,7 +53,7 @@ WITH vacc_pop (Continent, Location, Date, Population, New_Vaccinations, Accumula
 AS
 (
 	SELECT dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations,
-		SUM(vac.new_vaccinations) OVER (PARTITION BY dea.continent, dea.location ORDER BY dea.location, dea.date) AS accumulative_vaccinations_per_country
+		SUM(vac.new_vaccinations) OVER (PARTITION BY dea.location ORDER BY dea.location, dea.date) AS accumulative_vaccinations_per_country
 	FROM Covid.dbo.CovidDeaths dea
 	JOIN Covid.dbo.CovidVaccinations vac
 		ON dea.location = vac.location
