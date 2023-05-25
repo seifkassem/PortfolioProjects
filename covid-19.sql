@@ -11,10 +11,11 @@ ORDER BY death_percentage DESC
 
 --Highest death rates
 WITH deathr (Location, Population, Total_Cases, Maximum_Death_Rates) AS
-(SELECT location, population, MAX(total_cases) total_cases, MAX(total_deaths) maximum_death_rates
-FROM Covid.dbo.CovidDeaths
-GROUP BY location, population
-HAVING MAX(total_deaths) IS NOT NULL
+(
+	SELECT location, population, MAX(total_cases) total_cases, MAX(total_deaths) maximum_death_rates
+	FROM Covid.dbo.CovidDeaths
+	GROUP BY location, population
+	HAVING MAX(total_deaths) IS NOT NULL
 )
 
 SELECT *, ((Maximum_Death_Rates / Total_Cases) * 100) AS Percentage_of_Death_Per_Cases,
@@ -49,12 +50,13 @@ ORDER BY date
 --Percentage of vaccinated
 WITH vacc_pop (Continent, Location, Date, Population, New_Vaccinations, Accumulative_Vaccinations)
 AS
-(SELECT dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations,
-	SUM(vac.new_vaccinations) OVER (PARTITION BY dea.continent, dea.location ORDER BY dea.location, dea.date) AS accumulative_vaccinations_per_country
-FROM Covid.dbo.CovidDeaths dea
-JOIN Covid.dbo.CovidVaccinations vac
-	ON dea.location = vac.location
-	AND dea.date = vac.date
+(
+	SELECT dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations,
+		SUM(vac.new_vaccinations) OVER (PARTITION BY dea.continent, dea.location ORDER BY dea.location, dea.date) AS accumulative_vaccinations_per_country
+	FROM Covid.dbo.CovidDeaths dea
+	JOIN Covid.dbo.CovidVaccinations vac
+		ON dea.location = vac.location
+		AND dea.date = vac.date
 )
 
 SELECT *, (Accumulative_Vaccinations/Population) * 100 AS Accumulative_Percentage_of_Vaccinations_per_Country
