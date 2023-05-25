@@ -39,13 +39,13 @@ GROUP BY continent
 ORDER BY highest_death_count DESC
 
 
---New cases worldwide by date
+--Worst days
 SELECT date, SUM(new_cases) AS new_cases_worldwide, SUM(new_deaths) AS new_deaths_worldwide,
-((SUM(new_deaths) / SUM(new_cases)) * 100) AS percentage_of_death_worldwide
+((SUM(new_deaths) / SUM(new_cases)) * 100) AS percentage_of_new_deaths_worldwide
 FROM Covid.dbo.CovidDeaths
 GROUP BY date
 HAVING SUM(new_cases) != 0
-ORDER BY date
+ORDER BY SUM(new_cases) DESC
 
 
 --Percentage of vaccinated
