@@ -63,7 +63,7 @@ AS
 	GROUP BY dea.continent, dea.location, dea.population
 )
 
-SELECT *, (Total_Vaccinations_per_Country/Population) * 100 AS Accumulative_Percentage_of_Vaccinations_per_Country
+SELECT *, (Total_Vaccinations_per_Country/Population) * 100 AS Total_Percentage_of_Vaccinations_per_Country
 FROM vacc_pop
 WHERE Total_Vaccinations_per_Country IS NOT NULL
 ORDER BY Location
